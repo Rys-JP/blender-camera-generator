@@ -1,7 +1,7 @@
 bl_info = {
     "name": "CameraHelper",
-    "author": "Rys",
-    "version": (1,0,0),
+    "author": "Yoshida Shun",
+    "version": (1,0,1),
     "blender": (4,2,1),
     "location": "View3D > Tool Shelf",
     "description": "カメラワークを自動生成するアドオン"
@@ -17,7 +17,7 @@ def create_camera_setup():
     if bpy.context.active_object:
         target_loc = bpy.context.active_object.location
     else:
-        target_loc = Vector((0,0,0)) #(0,0,0) is tuple, Vector()  
+        target_loc = Vector((0,0,0)) 
 
     #ターゲットエンプティを生成
     bpy.ops.object.empty_add(location=(0,0,0))
@@ -41,45 +41,39 @@ def create_camera_setup():
     bpy.context.view_layer.update()
     camera.matrix_world = camera.matrix_world.copy()
     camera.constraints.remove(constraint)
-    camera.location = (0,0,0) #local座標内
+    camera.location = (0,0,0) #Local座標内
     camera.parent = camera_rig
-    #対象とエンプティは親子付けしない
-        
-    return target_loc, target_empty, camera_rig, camera
+    target_empty.location = target_loc
+    #対象とエンプティは親子付けしない    
+    return target_empty, camera_rig, camera
 
 #Pan
-def do_pan(target_loc, target_empty, camera):
+def do_pan(camera):
     camera.rotation_euler.z = radians(20)
     camera.keyframe_insert(data_path="rotation_euler", index=2, frame=1)
     #rotation_euler.zはdata_path="rotation_euler", index=2に対応
     camera.rotation_euler.z = radians(-20)
     camera.keyframe_insert(data_path="rotation_euler", index=2, frame=50)
-    
-    target_empty.location = target_loc
     return
     
 #Tilt
-def do_tilt(target_loc, target_empty, camera):
+def do_tilt(camera):
     camera.rotation_euler.x = radians(70)
     camera.keyframe_insert(data_path="rotation_euler", index=0, frame=1)
     camera.rotation_euler.x = radians(110)
     camera.keyframe_insert(data_path="rotation_euler", index=0, frame=50)
-    
-    target_empty.location = target_loc
     return
 
 #Dolly
-def do_dolly(target_loc, target_empty, camera_rig):
+def do_dolly(camera_rig):
     camera_rig.location.y = -10
     camera_rig.keyframe_insert(data_path="location", index=1, frame=1)
     camera_rig.location.y = -5
     camera_rig.keyframe_insert(data_path="location", index=1, frame=50)
-    
-    target_empty.location = target_loc
     return
     
 #Truck
-def do_truck(target_loc, target_empty, camera_rig):
+def do_truck(camera_rig):
     camera_rig.location.x = -5
     camera_rig.keyframe_insert(data_path="location", index=0, frame=1)
     camera_rig.location.x = 5
@@ -88,12 +82,10 @@ def do_truck(target_loc, target_empty, camera_rig):
     camera_rig.location.z = 0
     camera_rig.keyframe_insert(data_path="location", index=2, frame=1)
     camera_rig.keyframe_insert(data_path="location", index=2, frame=50)
-    
-    target_empty.location = target_loc
     return
         
 #Orbit
-def do_orbit(target_loc, target_empty):
+def do_orbit(target_empty):
     target_empty.rotation_euler.z = radians(0)
     target_empty.keyframe_insert(data_path="rotation_euler", index=2, frame=1)
     target_empty.rotation_euler.z = radians(360)
@@ -103,18 +95,14 @@ def do_orbit(target_loc, target_empty):
     target_empty.keyframe_insert(data_path="rotation_euler", index=0, frame=1)
     target_empty.rotation_euler.x = radians(0)
     target_empty.keyframe_insert(data_path="rotation_euler", index=0, frame=50)
-    
-    target_empty.location = target_loc
     return
  
 #Zoom
-def do_zoom(target_loc, target_empty, camera):
+def do_zoom(camera):
     camera.data.lens = 50
     camera.data.keyframe_insert(data_path="lens", frame=1)
     camera.data.lens = 100
     camera.data.keyframe_insert(data_path="lens", frame=50)
-    
-    target_empty.location = target_loc
     return
 
 #Operator
@@ -123,29 +111,29 @@ class OBJECT_OT_camera_helper(bpy.types.Operator):
     bl_label = "CameraHelper"
     
     def execute(self, context): 
-        target_loc, target_empty, camera_rig, camera = create_camera_setup()           
+        target_empty, camera_rig, camera = create_camera_setup()           
         if bpy.context.scene.pan_checkbox == True:
-            do_pan(target_loc, target_empty, camera)
+            do_pan(camera)
             bpy.context.scene.pan_checkbox = False
         else: pass
         if bpy.context.scene.tilt_checkbox == True:
-            do_tilt(target_loc, target_empty, camera)
+            do_tilt(camera)
             bpy.context.scene.tilt_checkbox = False
         else: pass
         if bpy.context.scene.dolly_checkbox == True:
-            do_dolly(target_loc, target_empty, camera_rig)
+            do_dolly(camera_rig)
             bpy.context.scene.dolly_checkbox = False
         else: pass
         if bpy.context.scene.truck_checkbox == True:
-            do_truck(target_loc, target_empty, camera_rig)
+            do_truck(camera_rig)
             bpy.context.scene.truck_checkbox = False
         else: pass
         if bpy.context.scene.orbit_checkbox == True:
-            do_orbit(target_loc, target_empty)
+            do_orbit(target_empty)
             bpy.context.scene.orbit_checkbox = False
         else: pass
         if bpy.context.scene.zoom_checkbox == True:
-            do_zoom(target_loc, target_empty, camera)
+            do_zoom(camera)
             bpy.context.scene.zoom_checkbox = False
         else: pass
         return {'FINISHED'}
