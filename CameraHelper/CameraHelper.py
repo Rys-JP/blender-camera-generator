@@ -1,7 +1,7 @@
 bl_info = {
     "name": "CameraHelper",
     "author": "Yoshida Shun",
-    "version": (1,0,1),
+    "version": (1,0,2),
     "blender": (4,2,1),
     "location": "View3D > Tool Shelf",
     "description": "カメラワークを自動生成するアドオン"
@@ -19,82 +19,82 @@ def create_camera_setup():
     else:
         target_loc = Vector((0,0,0)) 
 
-    #ターゲットエンプティを生成
+    #ターゲットを生成
     bpy.ops.object.empty_add(location=(0,0,0))
-    target_empty = bpy.context.active_object
-    target_empty.name = "Target_empty"
+    target = bpy.context.active_object
+    target.name = "Target"
 
-    #カメラリグを生成
+    #emptyを生成
     bpy.ops.object.empty_add(location=(0,-10,0))
-    camera_rig = bpy.context.active_object
-    camera_rig.name = "Camera_rig"
-    camera_rig.parent = target_empty
+    empty = bpy.context.active_object
+    empty.name = "Empty"
+    empty.parent = target
     
     #カメラを生成
     bpy.ops.object.camera_add(location=(0,-10,0)) #World座標内
     camera = bpy.context.active_object
     camera.name = "Camera"
     constraint = camera.constraints.new(type="TRACK_TO")
-    constraint.target = target_empty
+    constraint.target = target
     constraint.track_axis = "TRACK_NEGATIVE_Z"
     constraint.up_axis = "UP_Y"
     bpy.context.view_layer.update()
     camera.matrix_world = camera.matrix_world.copy()
     camera.constraints.remove(constraint)
     camera.location = (0,0,0) #Local座標内
-    camera.parent = camera_rig
-    target_empty.location = target_loc
+    camera.parent = empty
+    target.location = target_loc
     #対象とエンプティは親子付けしない    
-    return target_empty, camera_rig, camera
+    return target, empty, camera
 
 #Pan
-def do_pan(camera):
-    camera.rotation_euler.z = radians(20)
-    camera.keyframe_insert(data_path="rotation_euler", index=2, frame=1)
+def do_pan(empty):
+    empty.rotation_euler.z = radians(20)
+    empty.keyframe_insert(data_path="rotation_euler", index=2, frame=1)
     #rotation_euler.zはdata_path="rotation_euler", index=2に対応
-    camera.rotation_euler.z = radians(-20)
-    camera.keyframe_insert(data_path="rotation_euler", index=2, frame=50)
+    empty.rotation_euler.z = radians(-20)
+    empty.keyframe_insert(data_path="rotation_euler", index=2, frame=50)
     return
     
 #Tilt
-def do_tilt(camera):
-    camera.rotation_euler.x = radians(70)
-    camera.keyframe_insert(data_path="rotation_euler", index=0, frame=1)
-    camera.rotation_euler.x = radians(110)
-    camera.keyframe_insert(data_path="rotation_euler", index=0, frame=50)
+def do_tilt(empty):
+    empty.rotation_euler.x = radians(70)
+    empty.keyframe_insert(data_path="rotation_euler", index=0, frame=1)
+    empty.rotation_euler.x = radians(110)
+    empty.keyframe_insert(data_path="rotation_euler", index=0, frame=50)
     return
 
 #Dolly
-def do_dolly(camera_rig):
-    camera_rig.location.y = -10
-    camera_rig.keyframe_insert(data_path="location", index=1, frame=1)
-    camera_rig.location.y = -5
-    camera_rig.keyframe_insert(data_path="location", index=1, frame=50)
+def do_dolly(empty):
+    empty.location.y = -10
+    empty.keyframe_insert(data_path="location", index=1, frame=1)
+    empty.location.y = -5
+    empty.keyframe_insert(data_path="location", index=1, frame=50)
     return
     
 #Truck
-def do_truck(camera_rig):
-    camera_rig.location.x = -5
-    camera_rig.keyframe_insert(data_path="location", index=0, frame=1)
-    camera_rig.location.x = 5
-    camera_rig.keyframe_insert(data_path="location", index=0, frame=50)
+def do_truck(empty):
+    empty.location.x = -5
+    empty.keyframe_insert(data_path="location", index=0, frame=1)
+    empty.location.x = 5
+    empty.keyframe_insert(data_path="location", index=0, frame=50)
     #Z
-    camera_rig.location.z = 0
-    camera_rig.keyframe_insert(data_path="location", index=2, frame=1)
-    camera_rig.keyframe_insert(data_path="location", index=2, frame=50)
+    empty.location.z = 0
+    empty.keyframe_insert(data_path="location", index=2, frame=1)
+    empty.keyframe_insert(data_path="location", index=2, frame=50)
     return
         
 #Orbit
-def do_orbit(target_empty):
-    target_empty.rotation_euler.z = radians(0)
-    target_empty.keyframe_insert(data_path="rotation_euler", index=2, frame=1)
-    target_empty.rotation_euler.z = radians(360)
-    target_empty.keyframe_insert(data_path="rotation_euler", index=2, frame=50)
+def do_orbit(target):
+    target.rotation_euler.z = radians(0)
+    target.keyframe_insert(data_path="rotation_euler", index=2, frame=1)
+    target.rotation_euler.z = radians(360)
+    target.keyframe_insert(data_path="rotation_euler", index=2, frame=50)
     
-    target_empty.rotation_euler.x = radians(0)
-    target_empty.keyframe_insert(data_path="rotation_euler", index=0, frame=1)
-    target_empty.rotation_euler.x = radians(0)
-    target_empty.keyframe_insert(data_path="rotation_euler", index=0, frame=50)
+    target.rotation_euler.x = radians(0)
+    target.keyframe_insert(data_path="rotation_euler", index=0, frame=1)
+    target.rotation_euler.x = radians(0)
+    target.keyframe_insert(data_path="rotation_euler", index=0, frame=50)
     return
  
 #Zoom
@@ -111,7 +111,7 @@ class OBJECT_OT_camera_helper(bpy.types.Operator):
     bl_label = "CameraHelper"
     
     def execute(self, context): 
-        target_empty, camera_rig, camera = create_camera_setup()           
+        target, empty, camera = create_camera_setup()           
         if bpy.context.scene.pan_checkbox == True:
             do_pan(camera)
             bpy.context.scene.pan_checkbox = False
@@ -121,15 +121,15 @@ class OBJECT_OT_camera_helper(bpy.types.Operator):
             bpy.context.scene.tilt_checkbox = False
         else: pass
         if bpy.context.scene.dolly_checkbox == True:
-            do_dolly(camera_rig)
+            do_dolly(empty)
             bpy.context.scene.dolly_checkbox = False
         else: pass
         if bpy.context.scene.truck_checkbox == True:
-            do_truck(camera_rig)
+            do_truck(empty)
             bpy.context.scene.truck_checkbox = False
         else: pass
         if bpy.context.scene.orbit_checkbox == True:
-            do_orbit(target_empty)
+            do_orbit(target)
             bpy.context.scene.orbit_checkbox = False
         else: pass
         if bpy.context.scene.zoom_checkbox == True:
