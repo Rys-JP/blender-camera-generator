@@ -16,7 +16,7 @@ Blender用カメラワーク自動生成アドオン
 ## Installation
 1. 本リポジトリをダウンロードし、zipファイルを用意
 2. Blenderのアドオンメニューからインストール
-3. "Camera Helper" を有効化
+3. "Camera Generator" を有効化
 
 ## Usage
 1. 3D View の "Camera" タブから操作
@@ -38,4 +38,5 @@ Blender用カメラワーク自動生成アドオン
 ## Author
 - Rys
 - License: MIT
+
 
