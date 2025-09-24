@@ -1,6 +1,6 @@
 README
 
-# Blender Camera Helper Add-on
+# Blender Camera Generator Add-on
 Blender用カメラワーク自動生成アドオン
 
 ## Features
@@ -39,3 +39,4 @@ Blender用カメラワーク自動生成アドオン
 - Rys
 
 - License: MIT
+
