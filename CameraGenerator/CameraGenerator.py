@@ -1,6 +1,6 @@
 bl_info = {
     "name": "CameraGenerator",
-    "author": "Yoshida Shun",
+    "author": "Rys",
     "version": (1,0,3),
     "blender": (4,2,1),
     "location": "View3D > Tool Shelf",
@@ -180,4 +180,5 @@ def unregister():
     del bpy.types.Scene.zoom_checkbox
 
 if __name__ == "__main__":
+
     register()
