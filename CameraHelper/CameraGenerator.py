@@ -1,7 +1,7 @@
 bl_info = {
-    "name": "CameraHelper",
+    "name": "CameraGenerator",
     "author": "Yoshida Shun",
-    "version": (1,0,2),
+    "version": (1,0,3),
     "blender": (4,2,1),
     "location": "View3D > Tool Shelf",
     "description": "カメラワークを自動生成するアドオン"
@@ -24,7 +24,7 @@ def create_camera_setup():
     target = bpy.context.active_object
     target.name = "Target"
 
-    #emptyを生成
+    #エンプティを生成
     bpy.ops.object.empty_add(location=(0,-10,0))
     empty = bpy.context.active_object
     empty.name = "Empty"
@@ -34,15 +34,18 @@ def create_camera_setup():
     bpy.ops.object.camera_add(location=(0,-10,0)) #World座標内
     camera = bpy.context.active_object
     camera.name = "Camera"
+    #カメラをターゲットに向ける
     constraint = camera.constraints.new(type="TRACK_TO")
     constraint.target = target
     constraint.track_axis = "TRACK_NEGATIVE_Z"
     constraint.up_axis = "UP_Y"
     bpy.context.view_layer.update()
+    #ベイクして制約解除
     camera.matrix_world = camera.matrix_world.copy()
     camera.constraints.remove(constraint)
     camera.location = (0,0,0) #Local座標内
     camera.parent = empty
+    
     target.location = target_loc
     #対象とエンプティは親子付けしない    
     return target, empty, camera
@@ -106,9 +109,9 @@ def do_zoom(camera):
     return
 
 #Operator
-class OBJECT_OT_camera_helper(bpy.types.Operator):
-    bl_idname = "object.camera_helper" 
-    bl_label = "CameraHelper"
+class OBJECT_OT_camera_generator(bpy.types.Operator):
+    bl_idname = "object.camera_generator" 
+    bl_label = "CameraGenerator"
     
     def execute(self, context): 
         target, empty, camera = create_camera_setup()           
@@ -139,9 +142,9 @@ class OBJECT_OT_camera_helper(bpy.types.Operator):
         return {'FINISHED'}
                 
 #Panel        
-class OBJECT_PT_camera_helper(bpy.types.Panel):
-    bl_label = "CameraHelper"
-    bl_idname = "OBJECT_PT_helper_panel"
+class OBJECT_PT_camera_generator(bpy.types.Panel):
+    bl_label = "CameraGenerator"
+    bl_idname = "OBJECT_PT_generator_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Camera'       
@@ -154,11 +157,11 @@ class OBJECT_PT_camera_helper(bpy.types.Panel):
         layout.prop(context.scene, "truck_checkbox", text="Truck")
         layout.prop(context.scene, "orbit_checkbox", text="Orbit")
         layout.prop(context.scene, "zoom_checkbox", text="Zoom")
-        layout.operator("object.camera_helper", text="Create")
+        layout.operator("object.camera_generator", text="Create")
        
 def register():
-    bpy.utils.register_class(OBJECT_OT_camera_helper)
-    bpy.utils.register_class(OBJECT_PT_camera_helper)
+    bpy.utils.register_class(OBJECT_OT_camera_generator)
+    bpy.utils.register_class(OBJECT_PT_camera_generator)
     bpy.types.Scene.pan_checkbox = bpy.props.BoolProperty(name="Pan")
     bpy.types.Scene.tilt_checkbox = bpy.props.BoolProperty(name="Tilt")
     bpy.types.Scene.dolly_checkbox = bpy.props.BoolProperty(name="Dolly")
@@ -167,8 +170,8 @@ def register():
     bpy.types.Scene.zoom_checkbox = bpy.props.BoolProperty(name="Zoom")
       
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_camera_helper)
-    bpy.utils.unregister_class(OBJECT_PT_camera_helper)
+    bpy.utils.unregister_class(OBJECT_OT_camera_generator)
+    bpy.utils.unregister_class(OBJECT_PT_camera_generator)
     del bpy.types.Scene.pan_checkbox
     del bpy.types.Scene.tilt_checkbox
     del bpy.types.Scene.dolly_checkbox
